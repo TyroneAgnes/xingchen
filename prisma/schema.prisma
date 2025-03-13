@@ -1,0 +1,173 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 用户模型
+model User {
+  id               String    @id @default(uuid())
+  username         String    @unique
+  nickname         String?
+  password         String
+  inviteCode      String    @unique
+  referralCode    String?   // 推荐人的邀请码
+  referrer        User?     @relation("ReferralRelation", fields: [referrerId], references: [id])
+  referrerId      String?
+  referees        User[]    @relation("ReferralRelation")
+  token           String?
+  balance         Float     @default(0)
+  baseDeposit     Float     @default(0)  // 底仓（不可提现的充值金额）
+  starWalletBalance Float   @default(0)
+  starInvestBalance Float   @default(0)
+  vipLevel        Int       @default(1)
+  vipName         String    @default("普通代理")
+  teamCount       Int       @default(0)
+  directCount     Int       @default(0)
+  teamProfit      Float     @default(0)
+  totalProfit     Float     @default(0)
+  yesterdayProfit Float     @default(0)
+  starInvestProfit Float    @default(0)
+  starWalletProfit Float    @default(0)
+  avatar          String?
+  commission      Float     @default(0)  // 未提现的佣金
+  teamPerformance Float     @default(0)  // 团队业绩
+  isFirstLogin    Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // 关联
+  tradeRecords    TradeRecord[]
+  rechargeRecords RechargeRecord[]
+  completedTasks  CompletedTask[]
+  currentTasks    CurrentTask[]
+  taskHistory     TaskHistory[]
+}
+
+// 交易记录
+model TradeRecord {
+  id            String    @id @default(uuid())
+  userId        String
+  type          String    // buy, sell
+  symbol        String
+  price         Float
+  amount        Float
+  total         Float
+  status        String    // pending, completed, cancelled
+  returnTime    DateTime?
+  returnAmount  Float?
+  mentorReturn  Float?
+  mentorId      String?
+  mentorName    String?
+  returnRate    Float?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id])
+  mentorTrades  MentorTrade[]
+}
+
+// 导师交易记录
+model MentorTrade {
+  id            String    @id @default(uuid())
+  tradeRecordId String
+  time          DateTime
+  stockCode     String
+  stockName     String
+  type          String    // buy, sell
+  price         Float
+  volume        Int
+  profit        Float?
+  profitRate    String?
+  createdAt     DateTime  @default(now())
+
+  tradeRecord   TradeRecord @relation(fields: [tradeRecordId], references: [id])
+}
+
+// 充值记录
+model RechargeRecord {
+  id            String    @id @default(uuid())
+  userId        String
+  amount        Float
+  imageUrl      String
+  status        String    // pending, approved, rejected
+  rejectReason  String?
+  createdAt     DateTime  @default(now())
+  approvedAt    DateTime?
+
+  user          User      @relation(fields: [userId], references: [id])
+}
+
+// 已完成任务
+model CompletedTask {
+  id            String    @id @default(uuid())
+  userId        String
+  type          String    // weekly, fiveStars, threeDay, sevenDay, fifteenDay, thirtyDay
+  reward        Float
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime
+
+  user          User      @relation(fields: [userId], references: [id])
+}
+
+// 当前任务
+model CurrentTask {
+  id            String    @id @default(uuid())
+  userId        String
+  type          String
+  status        String    // pending, completed, expired
+  reward        Float
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+
+  user          User      @relation(fields: [userId], references: [id])
+}
+
+// 任务历史
+model TaskHistory {
+  id            String    @id @default(uuid())
+  userId        String
+  taskId        String
+  type          String
+  reward        Float
+  completedAt   DateTime
+  createdAt     DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id])
+}
+
+// 市场数据
+model MarketData {
+  id            String    @id @default(uuid())
+  symbol        String    @unique
+  name          String
+  market        String    // 港股/美股/期货/日股
+  price         Float
+  change        Float
+  changePercent Float
+  volume        Int
+  isPositive    Boolean
+  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime  @default(now())
+}
+
+// 市场指数
+model MarketIndex {
+  id            String    @id @default(uuid())
+  title         String    @unique
+  value         Float
+  change        Float
+  changePercent Float
+  isPositive    Boolean
+  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime  @default(now())
+}

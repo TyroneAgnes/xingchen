@@ -1,0 +1,11 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/market/route": "app/api/market/route.js",
+  "/star-invest/page": "app/star-invest/page.js",
+  "/trade/page": "app/trade/page.js",
+  "/login/page": "app/login/page.js",
+  "/page": "app/page.js",
+  "/market/page": "app/market/page.js",
+  "/star-invest/detail/page": "app/star-invest/detail/page.js",
+  "/recharge/page": "app/recharge/page.js"
+}
